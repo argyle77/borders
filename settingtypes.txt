@@ -1,0 +1,39 @@
+[World Bottom]
+
+# The approximate thickness of the impenetrable mantlestone layer.
+# For normal generation, any value less than 2x the "Mantlestone scale" may result in holes that pass through to the bottom layer.  See the Solid Bottom section below to mitigate this.  Recommended value is 20.
+# For alternative generation, the bottom is always guaranteed to be solid, and the recommended value is 5.
+borders_mantlestone_thickness (Mantlestone thickness) int 20 0 31000
+
+# Scale determines the severity of the mantlestone's features in the vertical direction.  "Mantlestone thickness" value should be set to at least 2x this amount.  This value is ignored if "Alternative generation" is enabled.  Recommended value is 4.5
+borders_scale (Mantlestone scale) float 4.5 0 100
+
+# Roughness determines the severity of the manltstone's features in the horizontal direction.  This value is ignored if "Alternative generation" is enabled.  Recommended value is 5.
+borders_roughness (Mantlestone roughness) float 5 2 100
+
+# The thickness of the deepstone layer from the bottom of the mantle up.  Deepstone replaces regular stone and is very hard to break.  This value should be larger than the mantle thickness.  Recommended value is 300.  Set to 0 to disable.
+borders_deepstone_thickness (Deepstone thickness) int 300 0 31000
+
+# The hardness level of the deepstone layer.  3 can be broken by conventional means.  4 can only be broken with advanced means, which may not be available in unmodded games.
+borders_deepstone_level (Deepstone hardness) int 4 3 4
+
+# Set this to true if you wish to select the altitude of the mantle layer manually.  Default is false, which causes the mantle to be automatically placed at the bottom of the world.
+borders_altitude_enable (Manual altitude enable) bool false
+
+# If "Manual altitude enable" is true, this value is used instead of the bottom-most node in the world.
+borders_altitude (Manual altitude) int -30912 -31000 31000
+
+# Alternative generation replaces the normally generated mantlestone layer with a noisier layer that will contain floating blocks.
+borders_alt_gen (Use alternative generation) bool false
+
+[*Solid Bottom]
+
+# The bottom layer of mantle consists of a solid uniform sheet covering the entirety of the lowest node of the world.  This is here to ensure that any holes in upper layers of the mantle will not allow access to the bottom of the world.
+borders_bottom_layer (Generate a solid bottom layer) bool true
+
+# Do you really need an impenetrable layer that is more than 1 node thick?
+borders_bottom_thickness (Height of the bottom layer) int 1 1 31000
+
+[World Sides]
+# The distance from the mapgen edge that the world border is placed.  No use placing this much further out than chunks are loaded / generated.
+borders_setback (Setback of border from world end) int 200 0 30000

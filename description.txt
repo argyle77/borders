@@ -1,0 +1,1 @@
+Adds impenetrable barriers to the sides and bottom of the world.
