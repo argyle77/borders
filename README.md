@@ -26,10 +26,10 @@ The second thing you'll find is out near the world borders, which currently exis
 ### Settings
 There are many variables that can be set with regards to these borders.  The setbacks from the bottom and edges of the worlds are adjustable, the thickness of the mantle and the deepstone, the hardness of the deepstone, and several parameters that effect how the mantlestone is generated.  See Settings -> All / Advanced Settings -> Mods -> borders for descriptions of these.  Alternatively, see settingtypes.txt.
 
-###Credits
+### Credits
 This mod, especially the mantlestone bits, owes a great deal to those who created the original works on which it was based.  LICENSE.md is probably the definitive resource for these credits, but briefly:
 
 Thank you to celeron55 (Perttu Ahola), kwolekr (Ryan Kwolek), paramat, Calinou, jn, VanessaE (Vanessa Dannenberg), and help from rubenwardy, GreenDimond, sofar, and Emerald2.
 
-###Note
+### Note
 This is a work in progress.  Suggestions and complaints are welcome.  Thank you.         
