@@ -48,6 +48,7 @@ local mapgen_edge_max = ccmax + numcmax * csize_n
 local bottom_node = mapgen_edge_min
 
 -- Code defaults
+local DEF_MANTLE_ENABLE = true
 local DEF_MANTLE_THICKNESS = 20
 local DEF_MANTLE_THICKNESS_ALT = 5
 local DEF_MANTLE_SCALE = 4.5
@@ -76,16 +77,27 @@ local setback = tonumber(minetest.settings:get(modname .. "_setback")) or DEF_SE
 local deepstone_level = tonumber(minetest.settings:get(modname .. "_deepstone_hardness")) or DEF_DEEPSTONE_HARDNESS
 local barrier_img_number = minetest.settings:get(modname .. "_barrier_number") or DEF_BARRIER_NUMBER
 
+local master_mantle_enable = minetest.settings:get_bool(modname .. "_enable_mantlestone", DEF_MANTLE_ENABLE)
 local bottom_layer_enable = minetest.settings:get_bool(modname .. "_bottom_layer", DEF_BOTTOM_LAYER_ENABLE)
 local manual_altitude_enable = minetest.settings:get_bool(modname .. "_altitude_enable", DEF_ALTITUDE_ENABLE)
 local mantle_alt_gen = minetest.settings:get_bool(modname .. "_alt_gen", DEF_MANTLE_ALT_GEN)
 
-local barrier_img = modname .. "_barrier" .. barrier_img_number .. ".png"
+local barrier_img
+if barrier_img_number == "3" then
+	barrier_img =  "default_water_source_animated.png"
+elseif barrier_img_number == "4" then
+	barrier_img =  "default_lava_flowing_animated.png^[opacity:185"
+elseif barrier_img_number == "5" then
+	barrier_img =  "default_ice.png^[opacity:127"
+else
+	barrier_img =  modname .. "_barrier" .. barrier_img_number .. ".png"
+end
 
 -- Version 4 support...
 if bottom_layer_enable == nil then bottom_layer_enable = DEF_BOTTOM_LAYER_ENABLE end
 if manual_altitude_enable == nil then manual_altitude = DEF_MANUAL_ALTITUDE end
 if mantle_alt_gen == nil then mantle_alt_gen = DEF_MANTLE_ALT_GEN end
+
 -- KLUDGE Alert: Until there's a better way to check if stratum ore is supported by the engine:
 local version = minetest.get_version()
 if not mantle_alt_gen and version and version.string then
@@ -108,7 +120,7 @@ local top_node_deepstone = bottom_node + deepstone_thickness - 1
 
 -- Place a solid layer of mantlestone at the bottom of the world, just in case our ore generation doesn't cover it.
 -- Since alternate generation guarantees this, we'll skip it in the default case.
-if bottom_layer_enable and not (mantle_alt_gen and bottom_layer_thickness == 1) then
+if bottom_layer_enable and not (mantle_alt_gen and bottom_layer_thickness == 1) and master_mantle_enable then
 	minetest.register_on_generated(function(minp, maxp)
 		if top_node_sheet >= minp.y and bottom_node <= maxp.y then
 			local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
@@ -132,7 +144,7 @@ if bottom_layer_enable and not (mantle_alt_gen and bottom_layer_thickness == 1) 
 	end)
 end
 
-if not mantle_alt_gen then
+if master_mantle_enable and not mantle_alt_gen then
 	-- I thought ore registrations were executed in order, but it appears reversed.
 	-- Generate mantlestone in a stratum using the engine's mapgen.
 	minetest.register_ore({
@@ -152,7 +164,7 @@ if not mantle_alt_gen then
 		y_min = bottom_node,
 		y_max = bottom_node + mantle_thickness + (mantle_scale * 1.9), -- 1.9 = 1 octave + .9 ocatave
 	})
-else
+elseif master_mantle_enable then
 	-- Alternative generation..  Resembles that other block game.
 	minetest.register_on_generated(function(minp, maxp, blockseed)
 		if top_node_alt >= minp.y and bottom_node <= maxp.y then
@@ -199,7 +211,7 @@ minetest.register_node(mstone, {
 	_doc_items_longdesc = S("An impenetrable stone found at the bottom of the world."),
 	tiles = { mantlestone_img },
 	drop = "",
-	groups = { unbreakable = 1, immortal = 1 },
+	groups = { unbreakable = 1, immortal = 1, immovable = 2},
 	sounds = default.node_sound_stone_defaults(),
 	is_ground_content = false,
 	on_blast = function() end,
@@ -223,7 +235,7 @@ minetest.register_node(barrier, {
 	sunlight_propagates = true,
 	light_source = 10,
 	use_texture_alpha = true,
---	damage_per_second = 2,
+--	damage_per_second = 2,  -- SOON!
 	tiles = {
 		{
 			image = barrier_img,
@@ -238,7 +250,7 @@ minetest.register_node(barrier, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 },
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -269,7 +281,7 @@ minetest.register_node(barrier_corner, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 },
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -286,7 +298,7 @@ minetest.register_node(barrier_frame, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 },
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -303,7 +315,7 @@ minetest.register_node(barrier_frame_corner, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 },
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 , immovable = 2},
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -320,7 +332,7 @@ minetest.register_node(barrier_frame_cross, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 },
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,

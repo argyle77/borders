@@ -3,3 +3,4 @@ mesecons_mvps?
 intllib?
 doc?
 caverealms?
+magma_conduits?
