@@ -60,6 +60,10 @@ local DEF_BOTTOM_LAYER_THICKNESS = 1
 local DEF_MANTLE_ALT_GEN = false
 local DEF_SETBACK = 200
 local DEF_DEEPSTONE_HARDNESS = 4 -- Meh, I prefer 4, but not sure this is possible in unmodded games
+local mantlestone_img = modname .. "_mantlestone.png"
+local deepstone_img = modname .. "_deepstone.png"
+local DEF_BARRIER_NUMBER = "1"
+local barrier_frame_img = modname .. "_frame.png"
 
 -- Controlling variables from settings
 local mantle_thickness = tonumber(minetest.settings:get(modname .. "_mantlestone_thickness")) or DEF_MANTLE_THICKNESS
@@ -70,9 +74,13 @@ local manual_altitude = tonumber(minetest.settings:get(modname .. "_altitude")) 
 local bottom_layer_thickness = tonumber(minetest.settings:get(modname .. "_bottom_thickness")) or DEF_BOTTOM_LAYER_THICKNESS
 local setback = tonumber(minetest.settings:get(modname .. "_setback")) or DEF_SETBACK
 local deepstone_level = tonumber(minetest.settings:get(modname .. "_deepstone_hardness")) or DEF_DEEPSTONE_HARDNESS
+local barrier_img_number = minetest.settings:get(modname .. "_barrier_number") or DEF_BARRIER_NUMBER
+
 local bottom_layer_enable = minetest.settings:get_bool(modname .. "_bottom_layer", DEF_BOTTOM_LAYER_ENABLE)
-local manual_altitude_enable = minetest.settings:get(modname .. "_altitude_enable", DEF_ALTITUDE_ENABLE)
+local manual_altitude_enable = minetest.settings:get_bool(modname .. "_altitude_enable", DEF_ALTITUDE_ENABLE)
 local mantle_alt_gen = minetest.settings:get_bool(modname .. "_alt_gen", DEF_MANTLE_ALT_GEN)
+
+local barrier_img = modname .. "_barrier" .. barrier_img_number .. ".png"
 
 -- Version 4 support...
 if bottom_layer_enable == nil then bottom_layer_enable = DEF_BOTTOM_LAYER_ENABLE end
@@ -189,7 +197,7 @@ end
 minetest.register_node(mstone, {
 	description = S("Mantlestone"),
 	_doc_items_longdesc = S("An impenetrable stone found at the bottom of the world."),
-	tiles = { modname .. "_mantlestone.png" },
+	tiles = { mantlestone_img },
 	drop = "",
 	groups = { unbreakable = 1, immortal = 1 },
 	sounds = default.node_sound_stone_defaults(),
@@ -202,13 +210,10 @@ minetest.register_node(mstone, {
 minetest.register_node(dstone, {
 	description = S("Deepstone"),
 	_doc_items_longdesc = S("A very hard stone, not diggable by normal means. Found near the bottom of the world."),
-	tiles = { modname .. "_deepstone.png" },
-	groups = { cracky = 1, level = deepstone_level }, -- Yeah, its really hard.  You'll need better tools than the default.
+	tiles = { deepstone_img },
+	groups = { cracky = 1, level = deepstone_level },
 	sounds = default.node_sound_stone_defaults(),
 })
-
-local tile1 = modname .. "_barrier.png"
-local tile2 = modname .. "_frame.png"
 
 minetest.register_node(barrier, {
 	description = S("Barrier"),
@@ -216,12 +221,12 @@ minetest.register_node(barrier, {
 	drawtype = "mesh",
 	mesh = "centered_plane.obj",
 	sunlight_propagates = true,
-	light_source = 13,
-	--	inventory_image = tile1,
-	--	wield_image = tile1,
+	light_source = 10,
+	use_texture_alpha = true,
+--	damage_per_second = 2,
 	tiles = {
 		{
-			image = tile1,
+			image = barrier_img,
 			animation = {
 				type = "vertical_frames",
 				aspect_w = 16,
@@ -247,12 +252,12 @@ minetest.register_node(barrier_corner, {
 	drawtype = "mesh",
 	mesh = "corner.obj",
 	sunlight_propagates = true,
-	light_source = 13,
-	--		inventory_image = tile1,
-	--		wield_image = tile1,
+	light_source = 10,
+	use_texture_alpha = true,
+--	damage_per_second = 2,
 	tiles = {
 		{
-			name = tile1,
+			name = barrier_img,
 			animation = {
 				type = "vertical_frames",
 				aspect_w = 16,
@@ -277,10 +282,7 @@ minetest.register_node(barrier_frame, {
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
 	mesh = "frame_full.obj",
-	light_source = 13,
---	inventory_image = tile1,
---	wield_image = tile1,
-	tiles = { name = tile2 },
+	tiles = { name = barrier_frame_img },
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
@@ -296,11 +298,8 @@ minetest.register_node(barrier_frame_corner, {
 	description = S("Barrier Corner Frame"),
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
-	light_source = 13,
 	mesh = "frame_corner_full.obj",
---	inventory_image = tile1,
---	wield_image = tile1,
-	tiles = { name = tile2 },
+	tiles = { name = barrier_frame_img },
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
@@ -316,11 +315,8 @@ minetest.register_node(barrier_frame_cross, {
 	description = S("Barrier Cross Frame"),
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
-	light_source = 13,
 	mesh = "frame_cross_full.obj",
---	inventory_image = tile1,
---	wield_image = tile1,
-	tiles = { name = tile2 },
+	tiles = { name = barrier_frame_img },
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",

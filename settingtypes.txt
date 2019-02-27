@@ -15,7 +15,7 @@ borders_roughness (Mantlestone roughness) float 5 2 100
 borders_deepstone_thickness (Deepstone thickness) int 300 0 31000
 
 # The hardness level of the deepstone layer.  3 can be broken by conventional means.  4 can only be broken with advanced means, which may not be available in unmodded games.
-borders_deepstone_level (Deepstone hardness) int 4 3 4
+borders_deepstone_level (Deepstone hardness) int 4 3 10
 
 # Set this to true if you wish to select the altitude of the mantle layer manually.  Default is false, which causes the mantle to be automatically placed at the bottom of the world.
 borders_altitude_enable (Manual altitude enable) bool false
@@ -35,5 +35,13 @@ borders_bottom_layer (Generate a solid bottom layer) bool true
 borders_bottom_thickness (Height of the bottom layer) int 1 1 31000
 
 [World Sides]
-# The distance from the mapgen edge that the world border is placed.  No use placing this much further out than chunks are loaded / generated.
+
+# World border texture - The textures used to style the world border.
+# 1 = Upward plasma arc
+# 2 = Downward crosshatched fence
+# 3 = Water-like
+# 4 = Lava-like
+borders_barrier_number (World border texture selection) int 1 1 4
+
+# The distance from the mapgen edge that the world border is placed.
 borders_setback (Setback of border from world end) int 200 0 30000

@@ -1,7 +1,9 @@
 # License terms
 
-The code in the mod was stitched together from the contributions of many people.
+The code, textures, and models in this mod were stitched together from the contributions of many people.
 
+
+### Code
 
 ___
 World bottom calculations came from the minetest engine's _mapgen.cpp_ file, which is under the following license:
@@ -26,16 +28,14 @@ with this program; if not, write to the Free Software Foundation, Inc.,
 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 
-**Note, copies of the full terms of the LGPL can be easily found online.**
-
+**NOTE:**  Copies of the full terms of the LGPL 2.1 (or later) can be found online.
 
 ___
-Portions of the code came from the "*bedrock*" mod, released under the very permissive 
+__Portions__ of the code came from the "*bedrock*" mod, released under the very permissive 
 "*DO WHAT THE F\*\*\* YOU WANT TO PUBLIC LICENSE*", by user "*jn*" from the minetest forums.
 
-
 ___
-Portions of the code came from the "bedrock2" mod, realsed under the zlib/libpng license:
+__Portions__ of the code came from the "bedrock2" mod, realsed under the zlib/libpng license:
 
 +---- zlib/libpng license ----+
 
@@ -51,12 +51,11 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 3. This notice may not be removed or altered from any source distribution.
 
-___
 **NOTE:**  In order to comply with the above license:  I (Argyle77) did not write the original code of the bedrock2
 mod.  This source version has been altered from the original (bedrock2 mod), and is not to be mistaken for the original.
 
 ___
-__Portions__ of this code are Copyright (C) 2019 Argyle77, Joshua Krueger <kruegejj@gmail.com> and may be used under the
+__Portions__ of this code are Copyright (C) 2019 Argyle77, Joshua Krueger <kruegejj@gmail.com> and may be used under the 
 terms of the MIT License:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -72,15 +71,25 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ___
-
 ### Textures
-* The **mantle_mantlestone.png** texture is an altered version the bedrock_bedrock.png texture from the *bedrock* mod, and 
+* The **borders_mantlestone.png** texture is an altered version the bedrock_bedrock.png texture from the *bedrock* mod, and 
 can be distributed freely.
-* The **mantle_deepstone.png** texture is an altered combination of the bedrock_deepstone.png file from the *bedrock* mod,
+* The **borders_deepstone.png** texture is an altered combination of the bedrock_deepstone.png file from the *bedrock* mod,
 and the default_stone.png texture from the *minetest_game* "*default*" mod.  Though substantially altered, this texture 
-may be subject to the license terms stated in the default mod.  If not subject to those terms, it may be freely distributed.
-
+may be subject to the license terms stated in the default mod (https://github.com/minetest/minetest_game/blob/master/mods/default/license.txt).  If not subject to those terms, it may be freely 
+distributed.
+* The **borders_barrier3.png** and **borders_barrier4.png** textures were directly lifted from minetest_game, default
+mod.  Original filenames were **default_water_source_animated.png** and **default_lava_flowing_animated.png**.  The only
+ changes I made were to remove their indexed palettes and adjust their transparencies.  The license text 
+for these are available here: https://github.com/minetest/minetest_game/blob/master/mods/default/license.txt
+* The **borders_barrier1.png**, **borders_barrier2.png**, **borders_frame** textures are Copyright (C) 2019 Argyle77, 
+and are distributable under the same license (MIT) as my portions of the code. 
 
 ___
+### Models
+* All models (**centered_plane.obj**, **frame_corner_full.obj**, **frame_full.obj**, **corner.obj**, 
+**frame_cross_full.obj**) are Copyright (C) 2019 Argyle77 and usable under the same license (MIT) as my portions of the
+ code.
 
+___
 Let's hope that covers it.
