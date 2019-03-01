@@ -216,6 +216,7 @@ minetest.register_node(mstone, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 })
 
@@ -254,6 +255,7 @@ minetest.register_node(barrier, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 	pointable = false,
 })
@@ -285,6 +287,7 @@ minetest.register_node(barrier_corner, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 	pointable = false,
 })
@@ -302,6 +305,7 @@ minetest.register_node(barrier_frame, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 	pointable = false,
 })
@@ -319,6 +323,7 @@ minetest.register_node(barrier_frame_corner, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 	pointable = false,
 })
@@ -336,6 +341,7 @@ minetest.register_node(barrier_frame_cross, {
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
+	on_destruct = function() end,
 	diggable = false,
 	pointable = false,
 })
