@@ -21,8 +21,7 @@ borders_alt_gen (Use alternative generation) bool false
 
 [**Solid Bottom]
 
-# The bottom layer of mantle consists of a solid uniform sheet covering the entirety of the lowest node of the world.  This is here to ensure that any holes in upper layers of the mantle will not allow access to the bottom of the world.  Unless using alternate generation,
-it is recommended that this be enabled as it will patch holes caused by, for instance, caverealms.
+# The bottom layer of mantle consists of a solid uniform sheet covering the entirety of the lowest node of the world.  This is here to ensure that any holes in upper layers of the mantle will not allow access to the bottom of the world.  Unless using alternate generation, it is recommended that this be enabled as it will patch holes caused by, for instance, caverealms.
 borders_bottom_layer (Generate a solid bottom layer) bool true
 
 # Do you really need an impenetrable layer that is more than 1 node thick?

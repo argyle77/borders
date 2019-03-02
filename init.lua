@@ -84,13 +84,13 @@ local mantle_alt_gen = minetest.settings:get_bool(modname .. "_alt_gen", DEF_MAN
 
 local barrier_img
 if barrier_img_number == "3" then
-	barrier_img =  "default_water_source_animated.png"
+	barrier_img = "default_water_source_animated.png"
 elseif barrier_img_number == "4" then
-	barrier_img =  "default_lava_flowing_animated.png^[opacity:185"
+	barrier_img = "default_lava_flowing_animated.png^[opacity:185"
 elseif barrier_img_number == "5" then
-	barrier_img =  "default_ice.png^[opacity:127"
+	barrier_img = "default_ice.png^[opacity:127"
 else
-	barrier_img =  modname .. "_barrier" .. barrier_img_number .. ".png"
+	barrier_img = modname .. "_barrier" .. barrier_img_number .. ".png"
 end
 
 -- Version 4 support...
@@ -211,7 +211,7 @@ minetest.register_node(mstone, {
 	_doc_items_longdesc = S("An impenetrable stone found at the bottom of the world."),
 	tiles = { mantlestone_img },
 	drop = "",
-	groups = { unbreakable = 1, immortal = 1, immovable = 2},
+	groups = { unbreakable = 1, immortal = 1, immovable = 2 },
 	sounds = default.node_sound_stone_defaults(),
 	is_ground_content = false,
 	on_blast = function() end,
@@ -236,7 +236,7 @@ minetest.register_node(barrier, {
 	sunlight_propagates = true,
 	light_source = 10,
 	use_texture_alpha = true,
---	damage_per_second = 2,  -- SOON!
+	--	damage_per_second = 2,  -- SOON!
 	tiles = {
 		{
 			image = barrier_img,
@@ -268,7 +268,7 @@ minetest.register_node(barrier_corner, {
 	sunlight_propagates = true,
 	light_source = 10,
 	use_texture_alpha = true,
---	damage_per_second = 2,
+	--	damage_per_second = 2,
 	tiles = {
 		{
 			name = barrier_img,
@@ -319,7 +319,7 @@ minetest.register_node(barrier_frame_corner, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1 , immovable = 2},
+	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -370,6 +370,8 @@ local place_barrier = function(cid_data, cid_data_above, y, cid_btype)
 		local drawtype = node["drawtype"]
 		if drawtype == "normal" or drawtype == "allfaces_optional" then return end
 		if (drawtype == "liquid") then
+			-- Meh... An aesthetic choice that really isn't necessary due to the introduction of the barrier fences
+			-- and rampant visual glitches involving transparent things.
 			if cid_data_above == minetest.CONTENT_AIR and y >= water_level then
 				return c_mantlestone
 			else
@@ -404,27 +406,30 @@ local barrier_scan = function(data, datap2, area, minp, maxp, cid_btype)
 						local onXdiv = x / MAP_BLOCKSIZE == math.floor(x / MAP_BLOCKSIZE)
 						local onYdiv = y / MAP_BLOCKSIZE == math.floor(y / MAP_BLOCKSIZE)
 						local onZdiv = z / MAP_BLOCKSIZE == math.floor(z / MAP_BLOCKSIZE)
-						if onXdiv then
-							datap2[pos_index] = minp.rot
-							if onYdiv then
-								data[pos_index] = c_frame_cross
-							else
-								data[pos_index] = c_frame
-							end
-						elseif onZdiv then
-							datap2[pos_index] = minp.rot
-							if onYdiv then
-								data[pos_index] = c_frame_cross
-							else
-								data[pos_index] = c_frame
-							end
-						elseif onYdiv then
-							if cid_btype == c_barrier_corner then
+
+						if new_cid ~= c_mantlestone then
+							if onXdiv then
 								datap2[pos_index] = minp.rot
-								data[pos_index] = c_frame_corner
-							else
-								datap2[pos_index] = frame_rotation_map[minp.rot]
-								data[pos_index] = c_frame
+								if onYdiv then
+									data[pos_index] = c_frame_cross
+								else
+									data[pos_index] = c_frame
+								end
+							elseif onZdiv then
+								datap2[pos_index] = minp.rot
+								if onYdiv then
+									data[pos_index] = c_frame_cross
+								else
+									data[pos_index] = c_frame
+								end
+							elseif onYdiv then
+								if cid_btype == c_barrier_corner then
+									datap2[pos_index] = minp.rot
+									data[pos_index] = c_frame_corner
+								else
+									datap2[pos_index] = frame_rotation_map[minp.rot]
+									data[pos_index] = c_frame
+								end
 							end
 						end
 					end
