@@ -79,4 +79,8 @@ ___
 **frame_cross_full.obj**) are Copyright (C) 2019 Argyle77 and usable under the terms of the MIT license.
 
 ___
+### Sounds
+* **whoosh.ogg** is from the teleport_request mod and was released under the **DO WHAT YOU WANT TO PUBLIC LICENSE (DWYWPL)**
+
+___
 Let's hope that covers it.

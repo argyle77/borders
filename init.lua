@@ -61,10 +61,13 @@ local DEF_BOTTOM_LAYER_THICKNESS = 1
 local DEF_MANTLE_ALT_GEN = false
 local DEF_SETBACK = 200
 local DEF_DEEPSTONE_HARDNESS = 4 -- Meh, I prefer 4, but not sure this is possible in unmodded games
+local DEF_BREACH_TIME = 5
 local mantlestone_img = modname .. "_mantlestone.png"
 local deepstone_img = modname .. "_deepstone.png"
 local DEF_BARRIER_NUMBER = "1"
 local barrier_frame_img = modname .. "_frame.png"
+local DEF_TELEPORT_ENABLE = true
+local DEF_BARRIER_ENABLE = true
 
 -- Controlling variables from settings
 local mantle_thickness = tonumber(minetest.settings:get(modname .. "_mantlestone_thickness")) or DEF_MANTLE_THICKNESS
@@ -76,21 +79,33 @@ local bottom_layer_thickness = tonumber(minetest.settings:get(modname .. "_botto
 local setback = tonumber(minetest.settings:get(modname .. "_setback")) or DEF_SETBACK
 local deepstone_level = tonumber(minetest.settings:get(modname .. "_deepstone_hardness")) or DEF_DEEPSTONE_HARDNESS
 local barrier_img_number = minetest.settings:get(modname .. "_barrier_number") or DEF_BARRIER_NUMBER
+local breach_time = tonumber(minetest.settings:get(modname .. "_breach_time")) or DEF_BREACH_TIME
 
 local master_mantle_enable = minetest.settings:get_bool(modname .. "_enable_mantlestone", DEF_MANTLE_ENABLE)
 local bottom_layer_enable = minetest.settings:get_bool(modname .. "_bottom_layer", DEF_BOTTOM_LAYER_ENABLE)
 local manual_altitude_enable = minetest.settings:get_bool(modname .. "_altitude_enable", DEF_ALTITUDE_ENABLE)
 local mantle_alt_gen = minetest.settings:get_bool(modname .. "_alt_gen", DEF_MANTLE_ALT_GEN)
+local teleport_enable = minetest.settings:get_bool(modname .. "_teleport_enable", DEF_TELEPORT_ENABLE)
+local barrier_enable = minetest.settings:get_bool(modname .. "_barrier_enable", DEF_BARRIER_ENABLE)
+
+-- This is for the future...?
+if not minetest.settings:get(modname .. "_setback") then
+	minetest.settings:set(modname .. "_setback", setback)
+	minetest.settings:write()
+end
 
 local barrier_img
+local barrier_groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 }
 if barrier_img_number == "3" then
 	barrier_img = "default_water_source_animated.png"
+	barrier_groups.flow_through = 1
 elseif barrier_img_number == "4" then
 	barrier_img = "default_lava_flowing_animated.png^[opacity:185"
 elseif barrier_img_number == "5" then
-	barrier_img = "default_ice.png^[opacity:127"
+	barrier_img = "default_ice.png^[opacity:185"
 else
 	barrier_img = modname .. "_barrier" .. barrier_img_number .. ".png"
+	barrier_groups.flow_through = 1
 end
 
 -- Version 4 support...
@@ -236,12 +251,6 @@ local flat_barrier_box = {
 	fixed = { { -0.325, -0.5, -0.5, 0.325, 0.5, 0.5 } }
 }
 
--- Current old
---local flat_barrier_box = {
---	type = "fixed",
---	fixed = { { -0.325, -0.5, -0.5, 0.375, 0.5, 0.5 } }
---}
-
 -- Old old
 local flat_barrier_box_vis = {
 	type = "fixed",
@@ -262,18 +271,10 @@ local corner_barrier_box_vis = {
 	}
 }
 
---local corner_barrier_box = {
---	type = "fixed",
---	fixed = {
---		{ -0.025, -0.5, -0.025, 0.025, 0.5, 0.5 }, { 0.025, -0.5, -0.025, -0.5, 0.5, 0.025 }
---	}
---}
-
 minetest.register_node(barrier, {
 	description = S("Barrier"),
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
-	--	mesh = "off_centered_plane.obj",
 	mesh = "centered_plane.obj",
 	sunlight_propagates = true,
 	light_source = 10,
@@ -294,7 +295,7 @@ minetest.register_node(barrier, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
+	groups = barrier_groups,
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -313,7 +314,6 @@ minetest.register_node(barrier_corner, {
 	use_texture_alpha = true,
 	selection_box = corner_barrier_box_vis,
 	collision_box = corner_barrier_box,
-	--	damage_per_second = 20,
 	tiles = {
 		{
 			name = barrier_img,
@@ -328,7 +328,7 @@ minetest.register_node(barrier_corner, {
 	paramtype = "light",
 	paramtype2 = "facedir",
 	drop = "",
-	groups = { unbreakable = 1, not_in_creative_inventory = 1, immortal = 1, immovable = 2 },
+	groups = barrier_groups,
 	is_ground_content = false,
 	on_blast = function() end,
 	can_dig = function() return false end,
@@ -342,7 +342,6 @@ minetest.register_node(barrier_frame, {
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
 	mesh = "frame_full.obj",
-	--	mesh = "frame_full_tri.obj",
 	tiles = { name = barrier_frame_img },
 	paramtype = "light",
 	paramtype2 = "facedir",
@@ -379,7 +378,6 @@ minetest.register_node(barrier_frame_cross, {
 	_doc_items_longdesc = S("An impenetrable barrier found at the edge of the world."),
 	drawtype = "mesh",
 	mesh = "frame_cross_full.obj",
-	--	mesh = "frame_cross_full_tri.obj",
 	tiles = { name = barrier_frame_img },
 	paramtype = "light",
 	paramtype2 = "facedir",
@@ -393,7 +391,6 @@ minetest.register_node(barrier_frame_cross, {
 	pointable = true,
 })
 
---print("mapgen_edge_max " .. mapgen_edge_max)
 local north_barrier = mapgen_edge_max - setback
 local south_barrier = mapgen_edge_min + setback
 local east_barrier = mapgen_edge_max - setback
@@ -526,56 +523,58 @@ end
 
 
 -- World Border Generation
-minetest.register_on_generated(function(minp, maxp)
-	local ns_minp, ns_maxp, ew_minp, ew_maxp
+if barrier_enable then
+	minetest.register_on_generated(function(minp, maxp)
+		local ns_minp, ns_maxp, ew_minp, ew_maxp
 
-	-- We'll make the north and south borders mutually exclusive in the same chunk
-	-- This will therefor not work in a single chunk world.
-	if minp.z <= north_barrier and maxp.z >= north_barrier then
-		ns_minp = { x = minp.x, y = minp.y, z = north_barrier, rot = 3 }
-		ns_maxp = { x = maxp.x, y = maxp.y, z = north_barrier }
-	elseif minp.z <= south_barrier and maxp.z >= south_barrier then
-		ns_minp = { x = minp.x, y = minp.y, z = south_barrier, rot = 1 }
-		ns_maxp = { x = maxp.x, y = maxp.y, z = south_barrier }
-	end
+		-- We'll make the north and south borders mutually exclusive in the same chunk
+		-- This will therefor not work in a single chunk world.
+		if minp.z <= north_barrier and maxp.z >= north_barrier then
+			ns_minp = { x = minp.x, y = minp.y, z = north_barrier, rot = 3 }
+			ns_maxp = { x = maxp.x, y = maxp.y, z = north_barrier }
+		elseif minp.z <= south_barrier and maxp.z >= south_barrier then
+			ns_minp = { x = minp.x, y = minp.y, z = south_barrier, rot = 1 }
+			ns_maxp = { x = maxp.x, y = maxp.y, z = south_barrier }
+		end
 
-	-- Since an e-w border can meet a n-s border, we have to make a separate check
-	if minp.x <= east_barrier and maxp.x >= east_barrier then
-		ew_minp = { x = east_barrier, y = minp.y, z = minp.z, rot = 0 }
-		ew_maxp = { x = east_barrier, y = maxp.y, z = maxp.z }
-	elseif minp.x <= west_barrier and maxp.x >= west_barrier then
-		ew_minp = { x = west_barrier, y = minp.y, z = minp.z, rot = 2 }
-		ew_maxp = { x = west_barrier, y = maxp.y, z = maxp.z }
-	elseif not ns_minp then
-		-- No north-south, no east-west - nothing to do.
-		return
-	end
+		-- Since an e-w border can meet a n-s border, we have to make a separate check
+		if minp.x <= east_barrier and maxp.x >= east_barrier then
+			ew_minp = { x = east_barrier, y = minp.y, z = minp.z, rot = 0 }
+			ew_maxp = { x = east_barrier, y = maxp.y, z = maxp.z }
+		elseif minp.x <= west_barrier and maxp.x >= west_barrier then
+			ew_minp = { x = west_barrier, y = minp.y, z = minp.z, rot = 2 }
+			ew_maxp = { x = west_barrier, y = maxp.y, z = maxp.z }
+		elseif not ns_minp then
+			-- No north-south, no east-west - nothing to do.
+			return
+		end
 
-	local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
-	local data = vm:get_data()
-	local datap2 = vm:get_param2_data()
-	local area = VoxelArea:new({ MinEdge = emin, MaxEdge = emax })
+		local vm, emin, emax = minetest.get_mapgen_object("voxelmanip")
+		local data = vm:get_data()
+		local datap2 = vm:get_param2_data()
+		local area = VoxelArea:new({ MinEdge = emin, MaxEdge = emax })
 
-	if ns_minp and ew_minp then
-		ew_maxp.rot = corner_rotation_map[ns_minp.rot][ew_minp.rot]
-		ns_maxp.rot = ew_maxp.rot
-	end
+		if ns_minp and ew_minp then
+			ew_maxp.rot = corner_rotation_map[ns_minp.rot][ew_minp.rot]
+			ns_maxp.rot = ew_maxp.rot
+		end
 
-	-- Two passes.  One for n-s, one for e-w.
-	if ns_minp then
-		build_barrier_wall(data, datap2, area, ns_minp, ns_maxp)
-	end
+		-- Two passes.  One for n-s, one for e-w.
+		if ns_minp then
+			build_barrier_wall(data, datap2, area, ns_minp, ns_maxp)
+		end
 
-	if ew_minp then
-		build_barrier_wall(data, datap2, area, ew_minp, ew_maxp)
-	end
+		if ew_minp then
+			build_barrier_wall(data, datap2, area, ew_minp, ew_maxp)
+		end
 
-	vm:set_data(data)
-	vm:set_param2_data(datap2)
-	vm:calc_lighting()
-	vm:update_liquids()
-	vm:write_to_map()
-end)
+		vm:set_data(data)
+		vm:set_param2_data(datap2)
+		vm:calc_lighting()
+		vm:update_liquids()
+		vm:write_to_map()
+	end)
+end
 
 local repair_barrier = function(pos)
 	local new_node
@@ -658,7 +657,7 @@ local repair_barrier = function(pos)
 			new_node = { name = barrier, param2 = 1 }
 		end
 	end
-	--		print("Setting node at " .. dump(pos) .. " to " .. dump(new_node))
+
 	minetest.set_node(pos, new_node)
 	return new_node
 end
@@ -668,7 +667,6 @@ end
 -- Return nearest border or nil if inside.
 local function is_outside_border(pos)
 	local outside_barrier = false
-
 	if pos.z >= north_barrier_inside then
 		outside_barrier = true
 		pos.z = north_barrier - 1
@@ -688,19 +686,9 @@ local function is_outside_border(pos)
 		outside_barrier = true
 		pos.x = west_barrier + 1
 	end
-
-	if outside_barrier then return pos
-	end
+	if outside_barrier then return pos end
 	return nil
 end
-
--- TODo: Prevent home outside border - Check on spawn?
-minetest.register_on_respawnplayer(function(object)
-	print("RESPAWN: " .. dump(object:get_player_name()))
-end)
-
-
--- Teleport to place border was crossed.
 
 local function remove_hud_effect(name, hud_id)
 	local player = minetest.get_player_by_name(name)
@@ -708,27 +696,41 @@ local function remove_hud_effect(name, hud_id)
 	end
 end
 
-local PLAYER_TIME_OVER_BORDER = 10
-local MIN_ACCOUNT_FOR_LAG = 5
-local function process_border_user(border_user)
+minetest.register_privilege("outside_barrier", {
+	description = S("Player may operate outside of the world barrier without being teleported."),
+	give_to_singleplayer = false,
+	give_to_admin = false,
+})
 
+local visibility_increment = 256 / breach_time
+local function process_border_user(border_user)
 	local player = minetest.get_player_by_name(border_user.name)
 	if not player then return end
 	local player_pos = player:get_pos()
 	local player_is_outside_border = is_outside_border(player_pos)
+	local outside_priv = minetest.check_player_privs(player, "outside_barrier")
 
-	if player_is_outside_border then
-		--		print("player outside")
+	if player_is_outside_border and not outside_priv then
+
 		border_user.counter_start = true
-		player:set_hp(math.max(player:get_hp() - 0.25, 0))
-		if border_user.counter <= 0 or player:get_hp() <= 0 then
-			player:set_pos(player_pos)
-			--			print("player teleported")
+		if border_user.counter <= 0 then
+			minetest.sound_play("whoosh",
+				{ to_player = player:get_player_name(), gain = 1.0 })
+			if border_user.cross_pos then
+				player:set_pos(border_user.cross_pos)
+			else
+				player:set_pos(player_is_outside_border)
+			end
 		else
+			if border_user.counter == breach_time then
+				-- First time through, save the cross-over-ish position.
+				border_user.cross_pos = player_is_outside_border
+			end
 
+			-- Use a full screen hud element to obscure the user's vision more the longer we're outside the border.
 			local hud_id = player:hud_add({
 				hud_elem_type = "image",
-				text = "invisible.png^[opacity:" .. (255 / PLAYER_TIME_OVER_BORDER) * (PLAYER_TIME_OVER_BORDER - border_user.counter),
+				text = "invisible.png^[opacity:" .. visibility_increment * (breach_time - border_user.counter + 1) - (visibility_increment / 2),
 				position = { x = 0.5, y = 0.5 },
 				name = "Outside Barrier Screen Tint",
 				scale = { x = -100, y = -100 },
@@ -736,77 +738,52 @@ local function process_border_user(border_user)
 				offset = { x = 0, y = 0 },
 			})
 			minetest.after(1, remove_hud_effect, border_user.name, hud_id)
-			--			print("player hud darkened")
 		end
 
-		--		border_user.debounce_count = MIN_ACCOUNT_FOR_LAG
-
-	else -- Player is inside border
-		--		print("player inside")
-		border_user.counter = PLAYER_TIME_OVER_BORDER
+	else
+		-- Player is inside border
+		border_user.counter = breach_time
 		border_user.counter_start = false
-		--		if border_user.debounce_count < 0 then
-		--			print("user counter set to 0")
-		--			border_user.counter = 0
-		--			border_user.counter_start = true
-		--		end
 	end
+
 	if border_user.counter_start then
 		border_user.counter = border_user.counter - 1
-		--		print("counter = " .. dump(border_user.counter))
 	end
-
-	--	border_user.debounce_count = border_user.debounce_count - 1
-	--	print("debouncer: " .. dump(border_user.debounce_count))
-
-	--	print("FUPD BRDER: " .. dump(border_user))
 end
 
 local border_users_list = {}
 local border_users_list_is_populated = false
 
--- pos is unused:
-local function add_border_user(pos, name)
+local function add_border_user(name)
 	local new_user = {
 		name = name,
-		counter = PLAYER_TIME_OVER_BORDER,
+		counter = breach_time,
 		counter_start = false,
-		--		debounce_count = MIN_ACCOUNT_FOR_LAG
 	}
+
 	local add_new_user = true
---	local old_user
 
 	if #border_users_list > 0 then
 		for i, border_user in ipairs(border_users_list) do
 			if border_user.name == new_user.name then
 				add_new_user = false
-				--				border_user.debounce_count = MIN_ACCOUNT_FOR_LAG
-				--				old_user = border_user
-				--				print("old user. reset debounce? ")
 			end
 		end
 	end
 
 	if add_new_user then
-		--		print("new user")
---		process_border_user(new_user)
 		table.insert(border_users_list, new_user)
-		--	else
-		--		print("old user. reset debounce? " .. dump(old_user.debounce_count))
 	end
-	--	print("getn: " .. table.getn(border_users_list) .. ", #: " .. #border_users_list)
 
 	if #border_users_list > 0 then border_users_list_is_populated = true end
 end
 
 local user_list
 minetest.register_on_joinplayer(function(object)
-	--	print("JOINER: " .. dump(object:get_player_name()))
 	if object and object:is_player() then
 		local name = object:get_player_name()
 		if name then
-			--			print("JOINER: " .. dump(object:get_player_name()))
-			add_border_user(nil, name)
+			add_border_user(name)
 		end
 	end
 end)
@@ -815,12 +792,9 @@ minetest.register_on_leaveplayer(function(object)
 	if object and object:is_player() then
 		local name = object:get_player_name()
 		if name then
-			--			print("Left: " .. dump(object:get_player_name()))
 			if #border_users_list ~= 0 then
-				--			print("TABLE SUDE: " .. table.getn(border_users_list))
 				for table_id, border_user in ipairs(border_users_list) do
 					if border_user.name == name then
-						--						print("remove border user: " .. dump())
 						table.remove(border_users_list, table_id)
 					end
 				end
@@ -829,124 +803,61 @@ minetest.register_on_leaveplayer(function(object)
 	end
 end)
 
-
 local repaired_barriers = {}
 local repaired_barriers_is_populated = false
-local old_is_protected = minetest.is_protected
-function minetest.is_protected(pos, player) -- player is sometimes a string and sometimes a userdata
-	--	print("Is Protected callback")
-	--	print("PLAYTER: " .. dump(player))
-	if is_barrier_node(pos) then
-		table.insert(repaired_barriers, { pos = pos, node = repair_barrier(pos) })
-		repaired_barriers_is_populated = true
-		--		local name
-		--		if player then
-		--			if type(player) ~= "string" then
-		--				if player:is_player() then
-		--					name = player:get_player_name()
-		--				end
-		--			else
-		--				name = player
-		--			end
-		--			add_border_user(pos, name)
-		return true
-		--		end
+if barrier_enable then
+	local old_is_protected = minetest.is_protected
+	function minetest.is_protected(pos, player) -- player is sometimes a string and sometimes a userdata
+		if is_barrier_node(pos) then
+			table.insert(repaired_barriers, { pos = pos, node = repair_barrier(pos) })
+			repaired_barriers_is_populated = true
+			return true
+		else
+			return old_is_protected(pos, player)
+		end
 	end
-
-	return old_is_protected(pos, player)
 end
-
--- If a non-converted (underground, etc) barrier node is dug, it will become a
--- barrier node.  This was used before I started using the protection API for the
--- same purpose.
---minetest.register_on_dignode(function(pos, oldnode, digger)
---	if not is_barrier_node(pos) then return end
---	plug_barrier(pos)
---end)
-
--- This was used before I found out that remove_node does the same thing,
--- but less often.
---local old_set_node = minetest.set_node
---function minetest.setnode(pos, node)
---	if is_barrier_node(pos) then
---		return repair_barrier(pos)
---	else
---    return old_set_node(pos, node)
---	end
 
 -- Override minetest.remove_node.
--- Addresses the issue with trees that straddle the barrier and get burned.
-local old_remove_node = minetest.remove_node
-function minetest.remove_node(pos)
-	if is_barrier_node(pos) then
-		--		print("remove_node repair")
-		-- Everyone is under suspicion!
-		--		local player_list = minetest.get_connected_players()
-		--		local name
-		--		if player_list then
-		--			for i, v in ipairs(player_list) do
-		--				if v and v:is_player() then
-		--					name = v:get_player_name()
-		--					print("name: " .. dump(name))
-		--					if name then
-		--						add_border_user(pos, name)
-		--					end
-		--				end
-		--				print("Player: " .. i .. ": " .. dump(v))
-		--			end
-		--		end
-		return repair_barrier(pos)
-	else -- Has to be one or the other.
-		return old_remove_node(pos)
+-- Addresses the issue with trees that straddle the barrier and get burned.  Also repairs stuff removed by the
+-- admin_pickaxe (from maptools)
+if barrier_enable then
+	local old_remove_node = minetest.remove_node
+	function minetest.remove_node(pos)
+		if is_barrier_node(pos) then
+			return repair_barrier(pos)
+		else -- Has to be one or the other.
+			return old_remove_node(pos)
+		end
 	end
 end
 
-
-
-
 local function border_timer_step()
-
-	-- After digging at a border, user may have crossed over.  Check every second for awhile.
+	-- Check every user every second for border crossings.
 	if border_users_list_is_populated then
-		--		print ("timer step")
 		if #border_users_list ~= 0 then
-			--			print("TABLE SUDE: " .. table.getn(border_users_list))
 			for table_id, border_user in ipairs(border_users_list) do
-
 				process_border_user(border_user)
-
-				--				if border_user.counter <= 0 and border_user.debounce_count <= 0 then -- table.remove(border_users_list, table_id) end
-				--					print("remove border user: " .. dump(table.remove(border_users_list, table_id)))
-				--				end
 			end
 		end
-		--print("getn: " .. table.getn(border_users_list) .. ", #: " .. #border_users_list)
 		if #border_users_list == 0 then border_users_list_is_populated = false end
 	end
 
 	-- This is here to account for dynamite, which uses a voxel manip to overwrite the changes made in is_protected
 	if repaired_barriers_is_populated then
-		repaired_barriers_is_populated = false
-		--		print("Engage barrier repair. Patching " .. dump(#repaired_barriers) .. " nodes.")
 		for i, v in ipairs(repaired_barriers) do
 			minetest.set_node(v.pos, v.node)
 		end
 		repaired_barriers = {}
+		repaired_barriers_is_populated = false
 	end
 
 	minetest.after(1, border_timer_step)
 end
 
-minetest.after(1, border_timer_step)
-
-
-
---minetest.register_on_protection_violation(function(pos, name)
-	--	print("Protection violation. callback")
-	-- This misses tnt, tunnel tool,
-	--	add_border_user(pos, name)
---end)
-
+if teleport_enable and barrier_enable then
+	minetest.after(1, border_timer_step)
+end
 
 
 -- Prevent pistons from pushing mantlestone and barriers

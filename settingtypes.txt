@@ -44,6 +44,9 @@ borders_altitude (Manual altitude) int -30912 -31000 31000
 
 [World Sides]
 
+# Side barrier enable - If set to false, will not make the world borders.
+borders_barrier_enable (Side barrier enable) bool true
+
 # World border texture - The textures used to style the world border.
 # 1 = Rising plasma arc
 # 2 = Falling cross-hatch
@@ -54,3 +57,10 @@ borders_barrier_number (World border texture selection) int 1 1 5
 
 # The distance from the mapgen edge that the world border is placed.  Note, entries divisible by 16 will have 1 added to them.
 borders_setback (Setback of border from mapgen end) int 200 0 30000
+
+[*Enforcement]
+# Teleport after border breach - After a certain amount of time (Breach time), teleport users who've breached the border back inside.
+borders_teleport_enable (Teleport border breachers) bool true
+
+# Breach time - How long after a breach occurs that the user is teleported back inside.
+borders_breach_time (Breach time threshold) int 5 1 20
