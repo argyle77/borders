@@ -101,8 +101,9 @@ if barrier_img_number == "3" then
 	barrier_groups.flow_through = 1
 elseif barrier_img_number == "4" then
 	barrier_img = "default_lava_flowing_animated.png^[opacity:185"
+	barrier_groups.flow_through = 1
 elseif barrier_img_number == "5" then
-	barrier_img = "default_ice.png^[opacity:185"
+	barrier_img = "default_ice.png^[opacity:200"
 else
 	barrier_img = modname .. "_barrier" .. barrier_img_number .. ".png"
 	barrier_groups.flow_through = 1
@@ -301,7 +302,7 @@ minetest.register_node(barrier, {
 	can_dig = function() return false end,
 	on_destruct = function() end,
 	diggable = false,
-	pointable = true,
+	pointable = false,
 })
 
 minetest.register_node(barrier_corner, {
@@ -334,7 +335,7 @@ minetest.register_node(barrier_corner, {
 	can_dig = function() return false end,
 	on_destruct = function() end,
 	diggable = false,
-	pointable = true,
+	pointable = false,
 })
 
 minetest.register_node(barrier_frame, {
@@ -352,7 +353,7 @@ minetest.register_node(barrier_frame, {
 	can_dig = function() return false end,
 	on_destruct = function() end,
 	diggable = false,
-	pointable = true,
+	pointable = false,
 })
 
 minetest.register_node(barrier_frame_corner, {
@@ -370,7 +371,7 @@ minetest.register_node(barrier_frame_corner, {
 	can_dig = function() return false end,
 	on_destruct = function() end,
 	diggable = false,
-	pointable = true,
+	pointable = false,
 })
 
 minetest.register_node(barrier_frame_cross, {
@@ -388,7 +389,7 @@ minetest.register_node(barrier_frame_cross, {
 	can_dig = function() return false end,
 	on_destruct = function() end,
 	diggable = false,
-	pointable = true,
+	pointable = false,
 })
 
 local north_barrier = mapgen_edge_max - setback
@@ -714,17 +715,26 @@ local function process_border_user(border_user)
 
 		border_user.counter_start = true
 		if border_user.counter <= 0 then
-			minetest.sound_play("whoosh",
-				{ to_player = player:get_player_name(), gain = 1.0 })
+			minetest.sound_play("whoosh", { to_player = player:get_player_name(), gain = 1.0 })
+			local pos
 			if border_user.cross_pos then
-				player:set_pos(border_user.cross_pos)
+				pos = border_user.cross_pos
 			else
-				player:set_pos(player_is_outside_border)
+				pos = player_is_outside_border
 			end
+			player:set_pos(pos)
+			minetest.log("action", "[" .. modname .. "] Player " .. dump(border_user.name) ..
+					" has been teleported back inside the edge barrier near (" .. math.floor(pos.x) ..
+					", " .. math.floor(pos.y) .. ", " .. math.floor(pos.z) .. ")")
+			border_user.counter = breach_time
+			border_user.counter_start = false
 		else
 			if border_user.counter == breach_time then
 				-- First time through, save the cross-over-ish position.
 				border_user.cross_pos = player_is_outside_border
+				minetest.log("action", "[" .. modname .. "] Player " .. dump(border_user.name) ..
+						" has breached the edge barrier near (" .. math.floor(player_is_outside_border.x) .. ", " ..
+						math.floor(player_is_outside_border.y) .. ", " .. math.floor(player_is_outside_border.z) .. ")")
 			end
 
 			-- Use a full screen hud element to obscure the user's vision more the longer we're outside the border.
@@ -843,7 +853,7 @@ local function border_timer_step()
 		if #border_users_list == 0 then border_users_list_is_populated = false end
 	end
 
-	-- This is here to account for dynamite, which uses a voxel manip to overwrite the changes made in is_protected
+	-- This is here to account for tnt, which uses a voxel manip to overwrite the changes made in is_protected
 	if repaired_barriers_is_populated then
 		for i, v in ipairs(repaired_barriers) do
 			minetest.set_node(v.pos, v.node)
