@@ -4,3 +4,5 @@ intllib?
 doc?
 caverealms?
 magma_conduits?
+nether?
+df_caverns?

@@ -1,4 +1,4 @@
-# World Borders [0.3] - Minetest Mod
+# World Borders [0.4] - Minetest Mod
 Tested on minetest versions 0.4.17.1 and 5.0.0-dev, using minetest_game.  If you are unfamiliar with minetest, get started at https://www.minetest.net/
 
 **Legends of the Edges**
@@ -14,7 +14,7 @@ The World Borders mod adds two major things to minetest.
 
 The first you may have seen before in such mods as [bedrock] and [bedrock2]. I've combined some ideas / code from these two and added some user settings.  This part of the mod adds "deepstone", which is an extremely hard rock that replaces stone near the bottom of the world.  Deepstone is, by default, unbreakable except perhaps by advanced tools, tnt, or mining lasers (see [technic]).  Underneath this, you'll find mantlestone, an unbreakable layer of stone that represents the lower border of the world.  Mantlestone resembles the bedrock you may be familiar with.
 
-The second thing you'll find is out near the world edges (where mapgen ends - currently 31km from the center).  This is a gigantic barrier structure extending into the sky as well as the ground that will prevent further movement beyond its confines.
+The second thing you'll find is out near the world edges (where mapgen ends - currently 31km from the center).  This is a gigantic barrier structure extending into the sky as well as the ground that will prevent further movement (much) beyond its confines.
 
 ## Download / Usage
 Download the zipped mod here: 
@@ -31,9 +31,9 @@ Browse the source code at https://github.com/argyle77/borders.
   
 **Don't forget to enable the mod for your world!**
 
-This mod is best used in new worlds, or worlds who's borders haven't been reached yet.  World Borders mod is in alpha and has not yet been extensively tested, especially for its interactions with other mods, so use caution.  It may be best to give it a try on a test world first.  Please report any difficulties, bugs, or suggestions you may have.
+This mod is best used in new worlds, or worlds who's borders haven't been reached yet.  World Borders mod is in beta and has not yet been extensively tested, especially for its interactions with other mods, so use caution.  Mods with mapgen elements are most likely to clash with this mod in some way.  It may be best to give it a try on a test world first.  Please report any difficulties, bugs, or suggestions you may have.
 
-I would not generally recommend using this mod in conjunction with [bedrock] or [bedrock2] because it is meant to provide / replace the functionality of these mods.  However, if you do use them together, you can disable the mantlestone and deepstone portions of this mod in the settings.  I have not yet personally tested the interactions between these mods.
+I would not generally recommend using this mod in conjunction with [bedrock] or [bedrock2] in a new world, because it is meant to provide / replace the functionality of these mods.  However, if you do use them together (for instance, if in an old world), you can disable the mantlestone and deepstone portions of this mod in the settings, while still retaining the world border/barrier portion.  I have not yet personally tested the interactions between this and those mods.
 
 For further help installing minetest mods, see: https://dev.minetest.net/Installing_Mods
 
@@ -42,25 +42,32 @@ For further help installing minetest mods, see: https://dev.minetest.net/Install
 **[default]** - The default mod from minetest_game (https://github.com/minetest/minetest_game) - Some nodes from [default] are referenced, and some of the barrier textures are provided by it.
 
 ## Optional Dependencies
+
+**[intllib]** - Internationalization library mod (https://forum.minetest.net/viewtopic.php?id=4929) - For future translations.
+
 **[doc]** - In-game help mod (https://forum.minetest.net/viewtopic.php?t=15912)
 
 **[mesecons_mvps]** - From the Mesecons mod (http://mesecons.net/) - Prevents pistons from affecting barrier blocks.
 
-**[intllib]** - Internationalization library mod (https://forum.minetest.net/viewtopic.php?id=4929) - For future translations.
+#### _Compatibility dependencies_
 
-**[caverealms]** - Underground Realms mod (https://forum.minetest.net/viewtopic.php?f=9&t=9522) - Provides minimal interoperation by causing caverealms to load first.
+**[caverealms]** - Underground Realms mod (https://forum.minetest.net/viewtopic.php?f=9&t=9522) - Provides minimal interoperation by causing caverealms to load first.  The lowest layer of the world may have flat expanses within the large caves, unless you are using alternate generation.
 
-**[magma_conduits]** - Magma conduits and volcanoes mod (https://forum.minetest.net/viewtopic.php?t=20188&p=338973) - Provides minimal interoperation by causing magma_conduits to load first.
+**[magma_conduits]** - Magma conduits and volcanoes mod (https://forum.minetest.net/viewtopic.php?t=20188&p=338973) - Provides minimal inter-operation by causing magma_conduits to load first.  Yields better results near the bottom of the world.
+
+**[nether]** - Adds a nether to minetest (https://forum.minetest.net/viewtopic.php?t=5790) - Provides minimal inter-operation by causing nether to load first.  The lowest layer may have flat expanses, unless using alternate generation. 
+
+**[df_caverns]** - Adds dwarf-fortress type caverns to minetest (https://forum.minetest.net/viewtopic.php?f=11&t=17096) - Provides minimal inter-operation for world borders in caves by causing df_caverns to load first.
 
 If you have a mod that seems to interfere with the borders provided by this mod, especially mods containing mapgen elements, you may find that adding that mod to the dependency lists of this mod may resolve (or ameliorate) your issue.  I'd be interested in hearing about any problems you may find.
 
 ## Settings
-There are many variables that can be set with regards to these borders.  The setbacks from the bottom and edges of the worlds are adjustable, the thickness of the mantle and the deepstone, the hardness of the deepstone, and several parameters that affect how the mantlestone is generated.  Mantlestone and world-edge barriers can be independently enabled / disabled.  The world-edge barrier texture can be selected.  See Settings -> All / Advanced Settings -> Mods -> borders for more in-depth descriptions of these.  Alternatively, see settingtypes.txt.
+There are many variables that can be set with regards to these borders.  The setbacks from the bottom and edges of the worlds are adjustable, the thickness of the mantle and the deepstone, the hardness of the deepstone, and several parameters that affect how the mantlestone is generated.  Mantlestone and world-edge barriers can be independently enabled / disabled.  The world-edge barrier texture can be selected (note, different texture may have different properties).  See Settings -> All / Advanced Settings -> Mods -> borders for more in-depth descriptions of these.  Alternatively, see settingtypes.txt.
 
 ## Credits
 This mod, especially the mantlestone bits, owes a great deal to those who created the original works on which it was based.  LICENSE.md is probably the definitive resource for these credits, but briefly:
 
-Thank you to celeron55 (Perttu Ahola), kwolekr (Ryan Kwolek), paramat, Wuzzy, Calinou (Hugo Locurcio), jn (Jonathan Neuschäfer	), VanessaE (Vanessa Dannenberg), and help on IRC from rubenwardy, GreenDimond, sofar, and Emerald2.
+Thank you to celeron55 (Perttu Ahola), kwolekr (Ryan Kwolek), paramat, Wuzzy, Calinou (Hugo Locurcio), jn (Jonathan Neuschäfer	), VanessaE (Vanessa Dannenberg), and help on IRC from rubenwardy, GreenDimond, sofar, Emerald2, and many others.
 
 ## Note
 This is a work in progress.  Suggestions, bug reports, and complaints are always welcome (vitriol will be ignored).  Thank you.
