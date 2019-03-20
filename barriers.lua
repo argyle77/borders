@@ -19,19 +19,18 @@ local west_barrier_inside = west_barrier + outside_offset
 
 local barrier_cid = minetest.get_content_id(bs.barrier)
 local barrier_corner_cid = minetest.get_content_id(bs.barrier_corner)
-local mantlestone_cid = minetest.get_content_id(bs.mstone)
 local frame_cid = minetest.get_content_id(bs.barrier_frame)
 local frame_cross_cid = minetest.get_content_id(bs.barrier_frame_cross)
 local frame_corner_cid = minetest.get_content_id(bs.barrier_frame_corner)
 
 local MAP_BLOCKSIZE = bs.blocksize
 
--- Numvers
+-- Numvers - Rotation maps.  Don't look.
 local frame_rotation_map = { [1] = 17, [2] = 6, [3] = 15, [0] = 8 }
-local corner_rotation_map = {}
-corner_rotation_map[3] = { [0] = 3, [2] = 2 }
-corner_rotation_map[1] = { [0] = 0, [2] = 1 }
+local corner_rotation_map = { [3] = { [0] = 3, [2] = 2 }, [1] = { [0] = 0, [2] = 1 } }
 
+-- This builds the [visible] barrier wall that is produced at mapgen time.  The invisible barrier nodes (embedded in
+-- trees or stone) will be produced by the protection api.
 local build_barrier_wall = function(data, datap2, area, minp, maxp)
 
 	-- I put these here on the untested theory that declaring them in a loop costs more.
@@ -39,77 +38,63 @@ local build_barrier_wall = function(data, datap2, area, minp, maxp)
 	local old_node_cid, above_node_cid
 	local old_node_def, drawtype
 	local write_node = true
-	local new_node_cid = barrier_cid
+	local new_node_cid
 	local rotation
 
-	--	print("BW")
+	-- Go through the given volume to determine if a particular node should be part of the barrier
 	-- These never traverse the whole volume, only the rank or file where the fence should go.
 	for x = minp.x, maxp.x do
-
 		for z = minp.z, maxp.z do
 
 			-- Make sure we're inside the perpendicular barriers to prevent crossing borders at corners
 			if x <= east_barrier and x >= west_barrier and z <= north_barrier and z >= south_barrier then
 
+				-- Yep, general case before we traipse the nodes (along the ys) - everything in a y column will be
+				-- the same(ish - we test for barrier fences later)
+				new_node_cid = barrier_cid
 				rotation = minp.rot
 
-				-- Are we on a corner column?
+				-- Are we on a corner column? - if so we encoded the rotation in maxp.rot and also we'll
+				-- use a corner barrier node.
 				if (x == west_barrier or x == east_barrier) and
 						(z == north_barrier or z == south_barrier) then
 					new_node_cid = barrier_corner_cid
 					rotation = maxp.rot
-				else
-					new_node_cid = barrier_cid
 				end
 
 				for y = minp.y, maxp.y do
 
-					-- Figure out if we should place a barrier node, and which node to place
 					pos_index = area:index(x, y, z)
 					old_node_cid = data[pos_index]
 					write_node = true
-					--					print("Oldnode cid: " .. dump(old_node_cid))
-					--					print("Oldnode name: " .. dump(minetest.get_name_from_content_id(old_node_cid)))
+
+					-- If air nodes, we'll definitely write over those.
 					if not (old_node_cid == minetest.CONTENT_AIR) then
 
+						-- Not an air node?  We do want to write over things like liquids and plants.
 						old_node_def = minetest.registered_nodes[minetest.get_name_from_content_id(old_node_cid)]
 						drawtype = old_node_def["drawtype"]
-						--						local oitype = old_node_def["walkable"]
-						--						print("NODE: " .. minetest.get_name_from_content_id(old_node_cid) .. ", dt: " .. drawtype)
-						if drawtype == "normal" then
+
+						-- We won't build the barrier underground or through trees or certain types of non-walkable (leaves)
+						-- It just doesn't look good that way
+						if drawtype == "normal" or drawtype == "allfaces_optional" then
 							write_node = false
-						elseif drawtype == "allfaces_optional" then
---							print("Not writing over node " .. dump(minetest.get_name_from_content_id(old_node_cid)) .. ", dt: " .. dump(drawtype))
-							write_node = false
-						elseif drawtype == "plantlike" then
-							--							write_node = false
---							print("Writing over plant.. " .. dump(minetest.get_name_from_content_id(old_node_cid)) .. ", dt: " .. dump(drawtype))
-						else
---							print("Writing over node.. " .. dump(minetest.get_name_from_content_id(old_node_cid)) .. ", dt: " .. dump(drawtype))
 						end
 					end
-					-- else
-					--    print("Air")
-					-- end
 
 					if write_node then
 
 						data[pos_index] = new_node_cid
 						datap2[pos_index] = rotation
 
+						-- if division of a point by the size of a mapblock equals itself truncated as an integer,
+						-- (i.e., no remainder) then we are on a part of the barrier that should be part of the barrier fence.
 						local onXdiv = x / MAP_BLOCKSIZE == math.floor(x / MAP_BLOCKSIZE)
 						local onYdiv = y / MAP_BLOCKSIZE == math.floor(y / MAP_BLOCKSIZE)
 						local onZdiv = z / MAP_BLOCKSIZE == math.floor(z / MAP_BLOCKSIZE)
 
-						if onXdiv then
+						if onXdiv or onZdiv then
 							if onYdiv then
-								data[pos_index] = frame_cross_cid
-							else
-								data[pos_index] = frame_cid
-							end
-						elseif onZdiv then
-							if onYdiv then
-
 								data[pos_index] = frame_cross_cid
 							else
 								data[pos_index] = frame_cid
@@ -283,21 +268,18 @@ local repair_barrier = function(pos)
 		end
 	end
 
-	--	print("Repair.")
-	--	print("POS: " .. dump(pos) .. ", NewNode: " .. dump(new_node))
 	minetest.set_node(pos, new_node)
 	return new_node
 end
 
 -- Override minetest.remove_node.
--- Addresses the issue with trees that straddle the barrier and get burned.  Also repairs stuff removed by the
+-- Addresses trees that straddle the barrier and get burned.  Also repairs stuff removed by the
 -- admin_pickaxe (from maptools), which I'm not sure I really want.
 local old_remove_node = minetest.remove_node
 function minetest.remove_node(pos)
 	if is_barrier_node(pos) then
-		--		print("Repair on remove.")
 		return repair_barrier(pos)
-	else -- Has to be one or the other.
+	else
 		return old_remove_node(pos)
 	end
 end
@@ -331,8 +313,7 @@ end
 
 local function remove_hud_effect(name, hud_id)
 	local player = minetest.get_player_by_name(name)
-	if player then player:hud_remove(hud_id)
-	end
+	if player then player:hud_remove(hud_id) end
 end
 
 local priv_name = "outside_barrier"
@@ -349,11 +330,15 @@ local function process_border_user(border_user)
 	local player_pos = player:get_pos()
 	local player_is_outside_border = is_outside_border(player_pos)
 	local outside_priv = minetest.check_player_privs(player, priv_name)
-	--	print("DUMP: " .. dump(border_user))
+
 	if player_is_outside_border and not outside_priv then
 
+		-- We'll give the player some time outside the border, make their vision progressively purpler, then teleport
+		-- them back in.
 		border_user.counter_start = true
 		if border_user.counter <= 0 then
+
+			-- Teleport the player and reset the timer.
 			minetest.sound_play("whoosh", { to_player = player:get_player_name(), gain = 1.0 })
 			local pos
 			if border_user.cross_pos then
@@ -362,19 +347,12 @@ local function process_border_user(border_user)
 				pos = player_is_outside_border
 			end
 			player:set_pos(pos)
-			--			player:move_to(pos, false) - Only entities - not players.
-			--			minetest.log("action", "[" .. modname .. "] Player " .. dump(border_user.name) ..
-			--					" has been teleported back inside the edge barrier near (" .. math.floor(pos.x) ..
-			--					", " .. math.floor(pos.y) .. ", " .. math.floor(pos.z) .. ")")
 			border_user.counter = bs.breach_time
 			border_user.counter_start = false
 		else
 			if border_user.counter == bs.breach_time then
 				-- First time through, save the cross-over-ish position.
 				border_user.cross_pos = player_is_outside_border
-				--				minetest.log("action", "[" .. modname .. "] Player " .. dump(border_user.name) ..
-				--						" has breached the edge barrier near (" .. math.floor(player_is_outside_border.x) .. ", " ..
-				--						math.floor(player_is_outside_border.y) .. ", " .. math.floor(player_is_outside_border.z) .. ")")
 			end
 
 			-- Use a full screen hud element to obscure the user's vision more the longer we're outside the border.
@@ -393,10 +371,6 @@ local function process_border_user(border_user)
 	else
 		-- Player is inside border
 		border_user.counter = bs.breach_time
-		--		if border_user.counter_start == true then
-		--			minetest.log("action", "[" .. modname .. "] Player " .. dump(border_user.name) ..
-		--					" inside border.")
-		--		end
 		border_user.counter_start = false
 	end
 
@@ -417,6 +391,7 @@ local function add_border_user(name)
 
 	local add_new_user = true
 
+	-- Eliminate redundancies
 	if #border_users_list > 0 then
 		for i, border_user in ipairs(border_users_list) do
 			if border_user.name == new_user.name then
@@ -457,6 +432,8 @@ minetest.register_on_leaveplayer(function(object)
 	end
 end)
 
+-- We'll use the protection API to prevent alterations to the barrier as well as
+-- draw barriers that were previously embedded.
 local repaired_barriers = {}
 local repaired_barriers_is_populated = false
 if bs.barrier_enable then
@@ -466,18 +443,11 @@ if bs.barrier_enable then
 			local thisnode = minetest.get_node(pos)
 			local nodedef = minetest.registered_nodes[thisnode.name]
 			if nodedef then
-				--				print("Node name: " .. dump(thisnode.name))
 				if not nodedef.groups.unbreakable then
-					--					print("Not unbreakable")
-					--					print("Repair on protection violation.")
 					local node_insert = repair_barrier(pos)
 					table.insert(repaired_barriers, { pos = pos, node = node_insert })
 					repaired_barriers_is_populated = true
-					--				else
-					--					print("Unbreakable.")
 				end
-				--			else
-				--				print("Undefined node")
 			end
 			return true
 		else
@@ -507,9 +477,11 @@ local function border_timer_step()
 		repaired_barriers_is_populated = false
 	end
 
+	-- Perpetuate the border cross check timer.
 	minetest.after(1, border_timer_step)
 end
 
+-- Start the border cross check timer.
 if bs.teleport_enable and bs.barrier_enable then
 	minetest.after(1, border_timer_step)
 end

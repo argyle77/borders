@@ -15,7 +15,6 @@ local mantlestone_cid = minetest.get_content_id(bs.mstone)
 -- Place a solid layer of mantlestone at the bottom of the world, just in case our ore generation doesn't cover it.
 -- Since alternate generation guarantees this, we'll skip it in the default case.
 if bs.master_mantle_enable and bs.bottom_layer_enable and not (bs.mantle_alt_gen and bs.bottom_layer_thickness == 1) then
-	print("DO 1");
 	local result = minetest.register_on_generated(function(minp, maxp)
 
 		if top_node_sheet >= minp.y and bs.bottom_node <= maxp.y then
@@ -38,13 +37,11 @@ if bs.master_mantle_enable and bs.bottom_layer_enable and not (bs.mantle_alt_gen
 			vm:write_to_map()
 		end
 	end)
-	print("Result: " .. dump(result))
 end
 
 if bs.master_mantle_enable and not bs.mantle_alt_gen then
 	-- I thought ore registrations were executed in order, but it appears reversed.
 	-- Generate mantlestone in a stratum using the engine's mapgen.
-	print("DO 2");
 	local result = minetest.register_ore({
 		ore_type = "stratum",
 		--		ore_type = "yermom",
@@ -63,9 +60,8 @@ if bs.master_mantle_enable and not bs.mantle_alt_gen then
 		y_min = bs.bottom_node,
 		y_max = bs.bottom_node + bs.mantle_thickness + (bs.mantle_scale * 1.9), -- 1.9 = 1 octave + .9 ocatave
 	})
-	print("Result2: " .. dump(result))
+
 elseif bs.master_mantle_enable then
-	print("DO 3");
 	-- Alternative generation..  Resembles that other block game.
 	minetest.register_on_generated(function(minp, maxp, blockseed)
 		if top_node_alt >= minp.y and bs.bottom_node <= maxp.y then

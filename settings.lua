@@ -100,6 +100,7 @@ borders.settings.init = function()
 	if bs.barrier_img_number == "3" then
 		bc.barrier_img = "default_water_source_animated.png" -- from default mod
 	elseif bs.barrier_img_number == "4" then
+		-- Can't rotate an animated texture?
 		bc.barrier_img = "default_lava_flowing_animated.png^[opacity:185" -- ^[transformR90"--"-- --^[opacity:185"
 		bc.animation_length = 3
 	elseif bs.barrier_img_number == "5" then

@@ -17,7 +17,7 @@ assert(loadfile(modpath .. "/barriers.lua"))(modname, S)
 
 -- This is for the future...?
 if not minetest.settings:get(modname .. "_setback") then
-	minetest.settings:set(modname .. "_setback", setback)
+	minetest.settings:set(modname .. "_setback", borders.settings.setback)
 	minetest.settings:write()
 end
 
