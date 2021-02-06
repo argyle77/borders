@@ -33,7 +33,7 @@ borders.settings = {
 	water_level = 1,
 }
 
--- Mapgen_limit can't be trusted.  If set to an invalid value in minetest.conf, it may not be correct here.
+-- Mapgen_limit can't be trusted.  If set to an invalid value in minetest.conf or map_meta.txt, it may not be correct here.
 --local mapgen_limit = tonumber(minetest.settings:get("mapgen_limit")) or MAX_MAPGEN_LOWER_BOUND
 --local chunksize = tonumber(minetest.settings:get("chunksize")) or DEF_CHUNKSIZE
 --local water_level = tonumber(minetest.settings:get("water_level")) or 1
@@ -88,9 +88,10 @@ borders.settings.init = function()
 	bs.teleport_enable = minetest.settings:get_bool(modname .. "_teleport_enable", bs.teleport_enable)
 	bs.barrier_enable = minetest.settings:get_bool(modname .. "_barrier_enable", bs.barrier_enable)
 
-	bs.mapgen_limit = tonumber(minetest.settings:get("mapgen_limit")) or bs.max_mapgen_lower_bound
-	bs.chunksize = tonumber(minetest.settings:get("chunksize")) or bs.chunksize
-	bs.water_level = tonumber(minetest.settings:get("water_level")) or bs.water_level
+	-- The following are mapgen-specific settings that, if found in map_meta.txt, will override values in minetest.conf
+	bs.mapgen_limit = tonumber(minetest.get_mapgen_setting("mapgen_limit")) or bs.max_mapgen_lower_bound
+	bs.chunksize = tonumber(minetest.get_mapgen_setting("chunksize")) or bs.chunksize
+	bs.water_level = tonumber(minetest.get_mapgen_setting("water_level")) or bs.water_level
 
 	bs.calc_mapgen_limits()
 
